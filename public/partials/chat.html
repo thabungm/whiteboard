@@ -1,0 +1,60 @@
+<div class="chat_div"> 
+<div>
+  
+
+  
+</div>
+<div class="row chat-window col-xs-5 col-md-3" id="chat_window_1" style="margin-left:10px;">
+        <div class="col-xs-12 col-md-12">
+          <div class="panel panel-default">
+                <div class="panel-heading top-bar">
+                    <div class="col-md-8 col-xs-8">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-comment"></span> Chat </h3>
+                    </div>
+                    
+
+                </div>
+                <div class="panel-body msg_container_base">
+                    <div ng-repeat="msg in msgArray" ng-class="(msg.type == 'receive') ? 'row msg_container base_sent' : 'row msg_container base_sent'" >
+                       <div ng-show="msg.type!='sent'" class="col-md-2 col-xs-2 avatar">
+                            <img src="http://www.bitrebels.com/wp-content/uploads/2011/02/Original-Facebook-Geek-Profile-Avatar-1.jpg" class=" img-responsive ">
+                        </div>
+                        <div class="col-md-10 col-xs-10">
+                            <div ng-class="(msg.type == 'receive') ? 'messages msg_sent' : 'messages msg_receive'">
+                                <p>{{msg.msg}}</p>
+                                <time datetime="2009-11-13T20:00">Timothy • 51 min</time>
+                            </div>
+                        </div>
+                        <div ng-show="msg.type=='sent'" class="col-md-2 col-xs-2 avatar">
+                            <img src="http://www.bitrebels.com/wp-content/uploads/2011/02/Original-Facebook-Geek-Profile-Avatar-1.jpg" class=" img-responsive ">
+                        </div>
+                    </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                    <form ng-submit='sendMsg()' >
+                      <input id="btn-input" ng-model='msg' type="text" class="form-control input-sm chat_input" placeholder="Write your message here..." />
+                        <span class="input-group-btn">
+                        <button type='submit' class="btn btn-primary btn-sm" id="btn-chat">Send</button>
+                        </span>
+
+                    </form>
+                        
+                    </div>
+                </div>
+        </div>
+        </div>
+    </div>
+    
+    <div class="btn-group dropup">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span class="glyphicon glyphicon-cog"></span>
+            <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li><a href="#" id="new_chat"><span class="glyphicon glyphicon-plus"></span> Novo</a></li>
+            <li><a href="#"><span class="glyphicon glyphicon-list"></span> Ver outras</a></li>
+            <li><a href="#"><span class="glyphicon glyphicon-remove"></span> Fechar Tudo</a></li>
+            <li class="divider"></li>
+            <li><a href="#"><span class="glyphicon glyphicon-eye-close"></span> Invisivel</a></li>
+        </ul>
+    </div>
