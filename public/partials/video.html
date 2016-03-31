@@ -1,17 +1,11 @@
 
-<div class="container">
+<div class="video_container">
 <div class="row">
-	<h3>Now talking {{}}</h3>
+
 	<ul class="list-inline">
-		<li></li>
-	</ul>
-</div>
-<div class="row">
-	<h3>Participants</h3>
-	<ul class="list-inline">
-		<li><video id='remoteVideo'></li>
-		<li><video id='localVideo'></li>
-		<input type="button" ng-click="pageReady(true)" value="Video">
+		<li><video class="part_video" ng-src="{{remotestream}}" id='remoteVideo'></li>
+		<li><video class="part_video" autoplay ng-src="{{getLocalVideo()}}" id='localVideo'></li>
+		<input type="button" ng-click="start(true)" value="Video">
 	</ul>
 </div>
 

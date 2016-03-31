@@ -83,11 +83,11 @@ canvas {
 	
 	float:left;
 	width:20%;
-	border:green 1px solid;
+	/*border:green 1px solid;*/
 	overflow-y: auto; height:400px;
 }
 .paint-tool {
-	border:green 1px solid;
+	/*border:green 1px solid; */
 	margin-left: 20px;
 
 }
@@ -225,4 +225,13 @@ img {
     position:fixed;
     left:0px;
     bottom:0;
+}
+
+.part_video{
+    width:100%;
+}
+.video_container {
+    float:left;
+    width:8%;
+    margin: 0px 0px 0px 111px;
 }

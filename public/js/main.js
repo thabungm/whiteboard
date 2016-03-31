@@ -1,5 +1,5 @@
 var mainApp = angular.module('mainApp', ['ui.router','ui.bootstrap']);
-mainApp.controller('webrtcController', ['$scope','socketFactory','drawFactory', function($scope,socket,drawFactory) {
+mainApp.controller('webrtcController', ['$rootScope','$scope','socketFactory','drawFactory','pcFactory','videostreamFactory','$sce', function($rootScope,$scope,socket,drawFactory,pcFactory,streamFactory,$sce) {
 	$scope.peerList = [];
 	$scope.socket = socket;
 	$scope.drawFactory = drawFactory;
@@ -16,12 +16,56 @@ mainApp.controller('webrtcController', ['$scope','socketFactory','drawFactory', 
   }
 
 
- 
+/********* webrtc starts here*******************/ 
 
+$scope.streamFactory = streamFactory;
+$scope.localVideo;
+$scope.pcFactory = pcFactory;
+$scope.getLocalVideo = function() {
+   return $sce.trustAsResourceUrl($scope.stream);
+};
+var stream;
+$scope.start = function(isOwner,data) {
   
+    //$digest or $apply
+    streamFactory.get().then(function(stream) {
+    //  $scope.localVideo = document.getElementById('localVideo');
+      $scope.stream = URL.createObjectURL(stream);
+      //$scope.localVideo.src = stream;
+      if (isOwner) {
+        pcFactory.makeOffer();  
+      // $scope.$digest();
+     } 
+     pcFactory.getPc().addStream(stream);
+     if (!isOwner) {
+        pcFactory.handleSignal(data);  
+
+     }
+
+    
+    });
+};
+
 $scope.socket.on('video', function (data) {
-  $scope.gotMessageFromServer(data);
+  if (data.type == 'sdp-offer') {
+    $scope.start(false,data);
+   
+  } else {
+    pcFactory.handleSignal(data);  
+  }
+  
+  
 });
+
+
+$rootScope.$on('remotestream', function (evnt) {
+  //return $sce.trustAsResourceUrl(stream);
+  $scope.remotestream =$sce.trustAsResourceUrl(URL.createObjectURL($rootScope.remotestream));
+});
+
+/********* webrtc ends here*******************/ 
+
+
 
 	$scope.socket.on('remote_draw', function (data) {
     $scope.drawFactory.setGeoShape(data.geo_type);
@@ -38,29 +82,14 @@ $scope.socket.on('video', function (data) {
       $scope.drawFactory.path_cords=[];
     } else {
       $scope.drawFactory.path_cords = data.path_cords;
-      /*
-      $scope.drawFactory.rectangle({},$scope.drawFactory);
-      return;
-      */
       $scope.drawFactory.path_cords = data.path_cords;
       $scope.drawFactory[ data.geo_shape ]({},$scope.drawFactory);
-      
-
-
     }
 		
 
   });
 
 
-
-// webrtc vdo starts here *********************************
-
-//  pageReady();
-
-// webrtc vdo ends here *********************************
-
-	//}
 
 
 
@@ -145,106 +174,8 @@ mainApp.directive("videochat", function(){
     restrict: "E",
     templateUrl:"partials/video.html",
     link: function($scope, element){
-
-          
-$scope.localVideo;
-$scope.remoteVideo;
-$scope.peerConnection;
-$scope.peerConnectionConfig = {'iceServers': [{'url': 'stun:stun.services.mozilla.com'}, {'url': 'stun:stun.l.google.com:19302'}]};
-
-navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
-window.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-window.RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || window.webkitRTCIceCandidate;
-window.RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription || window.webkitRTCSessionDescription;
-
-  $scope.pageReady = function(isCaller) {
-    $scope.localVideo = document.getElementById('localVideo');
-    $scope.remoteVideo = document.getElementById('remoteVideo');
-
-    //$scope.serverConnection = new WebSocket('ws://127.0.0.1:3434');
-    //serverConnection.onmessage = gotMessageFromServer;
-
-    var constraints = {
-        video: true,
-        audio: true,
-    };
-    function getUserMediaSuccess(stream) {
-        $scope.$apply(function() {
-          $scope.localStream = stream;
-          $scope.localVideo.src = window.URL.createObjectURL(stream);
-          //start(true);
-          $scope.peerConnection = new RTCPeerConnection($scope.peerConnectionConfig);
-          $scope.peerConnection.onicecandidate = gotIceCandidate;
-          $scope.peerConnection.onaddstream = gotRemoteStream;
-          $scope.peerConnection.addStream(stream);
-          if(isCaller) {
-              $scope.peerConnection.createOffer(gotDescription, errorHandler);
-          }
         
-          });
 
-    }
-
-    if(navigator.getUserMedia) {
-        navigator.getUserMedia(constraints, getUserMediaSuccess, errorHandler);
-      } else {
-        alert('Your browser does not support getUserMedia API');
-      }
-    }
-
-    
-
-
-    function gotMessageFromServer(message) {
-        if(!$scope.peerConnection) start(false);
-
-        var signal = JSON.parse(message.data);
-        if(signal.sdp) {
-            $scope.peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp), function() {
-                $scope.peerConnection.createAnswer(gotDescription, errorHandler);
-            }, errorHandler);
-        } else if(signal.ice) {
-            $scope.peerConnection.addIceCandidate(new RTCIceCandidate(signal.ice));
-        }
-    }
-
-    function gotIceCandidate(event) {
-        if(event.candidate != null) {
-          $scope.socket.emit('video',{'ice': event.candidate});
-           
-        }
-    }
-
-    function gotDescription(description) {
-      $scope.$apply(function() {
-            //wrapped this within $apply
-            console.log('got description');
-            $scope.peerConnection.setLocalDescription(description, function () {
-              //serverConnection.send(JSON.stringify({'sdp': description}));
-              $scope.socket.emit('video',{'sdp': description});
-
-            }, function() {console.log('set description error')});
-          });
-
-        
-    }
-
-    function gotRemoteStream(event) {
-        console.log('got remote stream');
-        remoteVideo.src = window.URL.createObjectURL(event.stream);
-    }
-
-    function errorHandler(error) {
-        console.log(error);
-    }
-
-
-
-
-
-
-      
-      
     }
   };
 });
