@@ -1,29 +1,24 @@
 mainApp.factory('drawFactory', function ($rootScope) {
   return {
     available_tools:{
-    'rectangle':{name:"Rectangle"},
-    'circle':{name:"Circle"},
-    'triangle':{name:"Triangle"},
-    'righttriangle':{name:"Right angled Triangle"},
-    'freeline':{name:"Free line"},
-    'straightline':{name:"Straight line"}
+    'rectangle':{name:"Rectangle",class:'rectangle'},
+    'circle':{name:"Circle",class:"circle"},
+    'triangle':{name:"Triangle",class:"triangle"},
+    'righttriangle':{name:"Right-angled-Triangle",class:"right_triangle"},
+    'freeline':{name:"Free-line",class:"free_line"},
+    'straightline':{name:"Straight-line",class:"straight_line"},
+    //'eraser':{name:"Eraser",class:"eraser"}
     },
     self:this,
-    lX:false,
-    lY:false,
-    cX:false,
-    cY:false,
     ctx:null,
     coffsetX:null,
     coffsetY:null,
     path_cords:[],
 
+
     tempCords:[],
     addTempCords :function(cords,geo_shape) {
-
       this.tempCords.push();
-
-
     },
 
     gatherCords:function(e) {
@@ -32,40 +27,54 @@ mainApp.factory('drawFactory', function ($rootScope) {
       this.path_cords.push(this.point(mouseX,mouseY));
     },
     getCtx : function() { return this.ctx; },
-    setCtx : function(ctx) { this.ctx = ctx;},
+    setCtx : function(ctx) { 
+
+      this.ctx = ctx;
+
+    },
     
     point:function(x,y) { return {x:x,y:y}},
-
-    path:null,
-    setPath:function(path) {this.path = path;},
-    getPath:function() {return this.path},
-
     drag:false,
     setDrag:function(drag) {this.drag = drag;},
     getDrag:function() { return this.drag; },
-
-    pen_type:null,
-    setPenType:function(pen_type) {
-      this.pen_type = pen_type;
-    },
-    getPenType:function() { return this.pen_type;},
-
     geo_shape:"rectangle",
-    setGeoShape:function(geo_shape) { this.geo_shape = geo_shape;},
+    setGeoShape:function(geo_shape) { 
+    this.geo_shape = geo_shape;},
     getGeoShape:function() {return this.geo_shape},
+    setDefaultColorWidth:function(self) {
+      if (!self) {
+        self = this;
+      }
+      self.setLineWidth(1);
 
-
+      self.setStrokeColor('black');
+    },
     setLastXY:function(x,y) {this.lX = x;this.lY = y},
     getLastXY:function() {return {x:this.lX,y:this.lY}},
 
     setCurrentXY:function(x,y) {this.cX = x;this.cY = y},
     getCurrentXY:function() {return {x:this.cX,y:this.cY}},
-
+    lineWidth:'2',
+    getLineWidth:function() { return this.lineWidth; },
+    setLineWidth:function(lineWidth,selfObj) {
+      if (!selfObj) {
+         selfObj = this;
+      }
+      selfObj.getCtx().lineWidth = lineWidth;
+    },
     
     begin_path:false,
 
     stroke_color:"blue",
-    setStrokeColor: function(color) {this.stroke_color = color;},
+    setStrokeColor: function(color,selfObj) {
+      if (!selfObj) {
+        selfObj = this;
+      }
+      var ctx = selfObj.getCtx();
+      ctx.strokeStyle = color;
+      ctx.fillColor = color;
+      selfObj.setCtx(ctx); 
+    },
     getStrokeColor: function() {
       return this.stroke_color;
     },
@@ -74,25 +83,20 @@ mainApp.factory('drawFactory', function ($rootScope) {
       var yDiffSq = (lastCord.y-initCord.y)*(lastCord.y-initCord.y);
       return Math.sqrt(xDiffSq + yDiffSq);
     },
-
     onDrag:function(event) {
-      
        if (this.getDrag()) {
           this.gatherCords(event);
         }
-      if (this.getGeoShape()==="freeline") {
+      if (window.isCurvePath(this.getGeoShape())) {
         eval("this." + this.getGeoShape())(event,this);  
       }
-      
-      
-
     },
     onStop:function(event) {
        this.setDrag(false);
        this.gatherCords(event);
        eval("this." + this.getGeoShape())(event,this);
        this.ctx.beginPath();
-       //this.path_cords = [];
+       
     },
 
     triangle: function(event,self) {
@@ -143,6 +147,12 @@ mainApp.factory('drawFactory', function ($rootScope) {
       ctx.stroke();
 
     },
+    eraser:function(event,self) {
+      var ctx = self.getCtx();
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = "15";
+      self.freeline(event,self);
+    },
 
     straightline:function(event,self) {
       var lastCord = self.path_cords[self.path_cords.length - 1];
@@ -178,7 +188,7 @@ mainApp.factory('drawFactory', function ($rootScope) {
       },
 
     rectangle:function(event,self) {
-      console.log("CALLED");
+
       var lastCord = self.path_cords[self.path_cords.length - 1];
       var initCord = self.path_cords[0];
       var ctx = self.getCtx();
@@ -194,14 +204,10 @@ mainApp.factory('drawFactory', function ($rootScope) {
     },
     draw:function(event){
       this.setDrag(true);
-      this.getCtx().strokeStyle = this.getStrokeColor();
       this.gatherCords(event);
     },
-    mousemove:function(event) {
-        
+   
 
-
-      }
     }
 
 });

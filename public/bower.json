@@ -21,8 +21,7 @@
     "angular-cookies": "~1.4.9",
     "angular-bootstrap": "~1.2.1",
     "angular-ui-router": "ui-router#~0.2.18",
-    "bootstrap": "~3.3.6",
-    "paper": "~0.9.25",
-    "webrtc-adapter": "~1.0.6"
+    "bootstrap": "~3.3.6"
+    
   }
 }

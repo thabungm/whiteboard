@@ -2,28 +2,30 @@ mainApp.factory('pcFactory',['$q','$rootScope','socketFactory',function ($q,$roo
     var stream;
     return {
       pc:null,
-      
       setPc:function(pc) {this.pc = pc;},
       getPc: function () {
         var self = this;
-
         if (this.pc) {
           return this.pc;
-          
         }
-      var iceConfig = { 'iceServers': [{ 'url': 'stun:stun.l.google.com:19302' }]};  
+      var iceConfig = {'iceServers': [{ 'url': 'stun:stun.l.google.com:19302' }]};
       var pc = new RTCPeerConnection(null);
-        pc.onicecandidate = function (evnt) {
-          socket.emit('video', {ice: evnt.candidate, type: 'ice' });
-        };
-
-      
+      pc.onicecandidate = function (evnt) {
+        socket.emit('video', {ice: evnt.candidate, type: 'ice' });
+      };
+      pc.oniceconnectionstatechange = function (evnt) {
+        if (evnt.state == "disconnected")
+        this.pc.close();
+      };
       pc.onaddstream = function(evnt) {
         $rootScope.remotestream = evnt.stream;
         $rootScope.$broadcast('remotestream');
       };
       this.setPc(pc);
       return pc;
+      },
+      end:function() {
+        this.pc.close();
       },
 
       makeOffer:function() {
@@ -36,8 +38,6 @@ mainApp.factory('pcFactory',['$q','$rootScope','socketFactory',function ($q,$roo
           console.log(e);
         },
         { mandatory: { offerToReceiveVideo: true, offerToReceiveAudio: true }});
-
-
       },
 
       handleSignal:function(data) {

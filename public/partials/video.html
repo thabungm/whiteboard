@@ -5,7 +5,8 @@
 	<ul class="list-inline">
 		<li><video class="part_video" ng-src="{{remotestream}}" id='remoteVideo'></li>
 		<li><video class="part_video" autoplay ng-src="{{getLocalVideo()}}" id='localVideo'></li>
-		<input type="button" ng-click="start(true)" value="Video">
+		<input ng-show="callStatus=='idle'" type="button" ng-click="start(true)" value="Call">
+		<input ng-show="callStatus=='progress'" type="button" ng-click="end(true)" value="End">
 	</ul>
 </div>
 

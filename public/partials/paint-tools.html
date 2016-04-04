@@ -1,8 +1,8 @@
 <div class="paint-tool">
     
-		<ul class="paint-tools list-inline">
+		<ul class="nav nav-pills">
 		    <li  ng-repeat="(key, value) in availableTools">
-		     <a ng-click="setGeoShape(key)" href="#"> {{ value.name }}</a>
+		     <a  ng-click="setGeoShape(key)" href="#" class="active">{{value.name}}</a>
 			</li>
 		</ul>
     

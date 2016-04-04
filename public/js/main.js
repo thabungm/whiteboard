@@ -1,3 +1,11 @@
+window.curvePathArray = ['freeline','eraser'];
+window.isCurvePath = function(geo) {
+  if (window.curvePathArray.indexOf(geo) >= 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
 var mainApp = angular.module('mainApp', ['ui.router','ui.bootstrap']);
 mainApp.controller('webrtcController', ['$rootScope','$scope','socketFactory','drawFactory','pcFactory','videostreamFactory','$sce', function($rootScope,$scope,socket,drawFactory,pcFactory,streamFactory,$sce) {
 	$scope.peerList = [];
@@ -7,17 +15,13 @@ mainApp.controller('webrtcController', ['$rootScope','$scope','socketFactory','d
 	$scope.socket.on('chat:text',function(data) {
     $scope.msgArray.push(data);
   });
-
+  $scope.callStatus = "idle";
   $scope.msg = "";
   $scope.sendMsg = function() {
     $scope.socket.emit('chat:text',{msg:$scope.msg,type:'receive'});
     $scope.msgArray.push({type:'sent',msg:$scope.msg});
     $scope.msg = "";
   }
-
-
-/********* webrtc starts here*******************/ 
-
 $scope.streamFactory = streamFactory;
 $scope.localVideo;
 $scope.pcFactory = pcFactory;
@@ -27,49 +31,52 @@ $scope.getLocalVideo = function() {
 var stream;
 $scope.start = function(isOwner,data) {
   
-    //$digest or $apply
     streamFactory.get().then(function(stream) {
-    //  $scope.localVideo = document.getElementById('localVideo');
-      $scope.stream = URL.createObjectURL(stream);
-      //$scope.localVideo.src = stream;
-      if (isOwner) {
-        pcFactory.makeOffer();  
-      // $scope.$digest();
-     } 
+     $scope.stream = URL.createObjectURL(stream);
      pcFactory.getPc().addStream(stream);
+     if (isOwner) {
+       pcFactory.makeOffer();  
+     } 
+     
+     $scope.callStatus = 'progress';
      if (!isOwner) {
-        pcFactory.handleSignal(data);  
-
+       pcFactory.handleSignal(data);  
      }
-
-    
     });
+};
+$scope.end = function(isOwner,data) {
+  pcFactory.end();
 };
 
 $scope.socket.on('video', function (data) {
   if (data.type == 'sdp-offer') {
     $scope.start(false,data);
-   
   } else {
     pcFactory.handleSignal(data);  
   }
-  
-  
 });
 
 
+
+$scope.setGeoShape = function(toolname) {
+  if ($scope.drawFactory.getGeoShape() == 'eraser')  {
+    $scope.drawFactory.setDefaultColorWidth($scope.drawFactory);
+  }
+  $scope.drawFactory.setGeoShape(toolname);
+
+};
+     
+
 $rootScope.$on('remotestream', function (evnt) {
-  //return $sce.trustAsResourceUrl(stream);
   $scope.remotestream =$sce.trustAsResourceUrl(URL.createObjectURL($rootScope.remotestream));
 });
 
-/********* webrtc ends here*******************/ 
 
 
 
 	$scope.socket.on('remote_draw', function (data) {
     $scope.drawFactory.setGeoShape(data.geo_type);
-    if (data.geo_shape == "freeline") {
+    if (window.isCurvePath(data.geo_shape)) {
       $scope.drawFactory.setDrag(true);
       angular.forEach(data.path_cords,function(val) {
         $scope.drawFactory.path_cords.push(val);
@@ -135,6 +142,8 @@ mainApp.directive("draw", function(){
        element[0].width = element[0].width; 
       }
 
+
+
       
     }
   };
@@ -147,16 +156,11 @@ mainApp.directive("painttools", function(){
     restrict: "E",
     templateUrl:"partials/paint-tools.html",
     link: function(scope, element){
-      scope.setGeoShape = function(toolname) {
-        scope.drawFactory.setGeoShape(toolname);
-
-      };
+      
       scope.availableTools = scope.drawFactory.available_tools;
     }
   };
 });
-
-
 
 mainApp.directive("chat", function(){
   return {

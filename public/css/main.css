@@ -88,7 +88,12 @@ canvas {
 }
 .paint-tool {
 	/*border:green 1px solid; */
-	margin-left: 20px;
+	margin-left: 10px;
+    
+    position: absolute;
+    top: 450px;
+    left: 19px;
+
 
 }
 .text_chat_ul{
@@ -234,4 +239,7 @@ img {
     float:left;
     width:8%;
     margin: 0px 0px 0px 111px;
+}
+.rectangle {
+
 }

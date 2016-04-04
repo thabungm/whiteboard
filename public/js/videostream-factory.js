@@ -6,7 +6,7 @@ mainApp.factory('videostreamFactory', function ($q) {
           return $q.when(stream);
         } else {
           var d = $q.defer();
-          navigator.getUserMedia({
+          navigator.getUserMedia( {
             video: true,
             audio: true
           }, function (s) {
