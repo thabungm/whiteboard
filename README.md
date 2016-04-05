@@ -1,4 +1,4 @@
-# Interactive whiteboard with Angular.js,node.js & webrtc
+# Interactive drawing with Angular.js,canvas,node.js & webrtc
 
 
 Disclaimer: The code is not perfect & has a lot to improve.
